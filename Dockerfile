@@ -17,14 +17,21 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Копируем проект в директорию /var/www/html
 COPY . /var/www/html
+# Копируем настройки Apache
+COPY ./000-default.conf /etc/apache2/sites-available/000-default.conf
 
-# Устанавливаем права и запускаем установку зависимостей
+
+# Устанавливаем права и устанавливаем зависимости Laravel
 WORKDIR /var/www/html
-RUN composer install
 
-# Копируем файл настроек и генерируем ключ приложения Laravel
-RUN cp .env.example .env
-RUN php artisan key:generate
+# Проверяем, установлен ли composer.json
+RUN if [ -f composer.json ]; then composer install; fi
+
+RUN a2enmod rewrite
+
+
+# Убедимся, что .env.example существует перед копированием
+#RUN cp .env.example .env && php artisan key:generate
 
 # Указываем порт, на котором будет работать приложение
 EXPOSE 80

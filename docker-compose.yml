@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # Пробрасываем порт 80 на 8080
+    volumes:
+      - .:/var/www/html # Монтируем локальный проект в контейнер
+
