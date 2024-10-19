@@ -1,12 +1,25 @@
 version: "3.8"
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:80" # Пробрасываем порт 80 на 8080
-    volumes:
-      - .:/var/www/html # Монтируем локальный проект в контейнер
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            - .:/var/www
+        ports:
+            - "8000:80" # Пробрасываем порт 80 контейнера на порт 8000 хоста
+        depends_on:
+            - db
 
+    db:
+        image: postgres:latest
+        environment:
+            POSTGRES_USER: root
+            POSTGRES_PASSWORD: XrChmP6Q9EwRvHheHE1o2MWDPZXUhOAX
+            POSTGRES_DB: database_6diy
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+
+volumes:
+    pgdata:

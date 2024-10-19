@@ -1,37 +1,41 @@
-# Используем официальный образ PHP с Apache
-FROM php:8.1-apache
+# Используем официальный образ PHP с FPM
+FROM php:8.1-fpm
 
-# Устанавливаем расширения PHP и необходимые зависимости
+# Устанавливаем зависимости
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libzip-dev \
     zip \
     unzip \
     git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+    && docker-php-ext-install gd pdo pdo_pgsql
 
-# Устанавливаем Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Установка Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Копируем проект в директорию /var/www/html
-COPY . /var/www/html
-# Копируем настройки Apache
-COPY ./000-default.conf /etc/apache2/sites-available/000-default.conf
+# Копируем проект в контейнер
+COPY . /var/www
 
+# Устанавливаем рабочую директорию
+WORKDIR /var/www
 
-# Устанавливаем права и устанавливаем зависимости Laravel
-WORKDIR /var/www/html
+# Увеличиваем таймаут для Composer, если необходимо
+RUN composer config --global process-timeout 600
 
-# Проверяем, установлен ли composer.json
-RUN if [ -f composer.json ]; then composer install; fi
+# Устанавливаем зависимости Laravel
+RUN composer install --prefer-dist --no-scripts --no-progress
 
-RUN a2enmod rewrite
+# Копируем файл настроек .env
+RUN cp .env.example .env
 
+# Генерируем ключ приложения
+RUN php artisan key:generate
 
-# Убедимся, что .env.example существует перед копированием
-#RUN cp .env.example .env && php artisan key:generate
-
-# Указываем порт, на котором будет работать приложение
+# Открываем порт для доступа
 EXPOSE 80
+
+# Запускаем php-fpm
+CMD ["php-fpm"]
