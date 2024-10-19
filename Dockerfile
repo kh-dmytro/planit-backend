@@ -10,9 +10,10 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     git \
-    libpq-dev \  
+    libpq-dev \
+    nginx \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_pgsql  
+    && docker-php-ext-install gd pdo pdo_pgsql
 
 # Установка Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -35,8 +36,11 @@ RUN cp .env.example .env
 # Генерируем ключ приложения
 RUN php artisan key:generate
 
+# Конфигурация Nginx
+COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+
 # Открываем порт для доступа
 EXPOSE 80
 
-# Запускаем php-fpm
-CMD ["php-fpm"]
+# Запускаем php-fpm и Nginx
+CMD service nginx start && php-fpm
