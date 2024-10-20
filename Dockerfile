@@ -29,9 +29,6 @@ RUN composer config --global process-timeout 600
 # Устанавливаем зависимости Laravel
 RUN composer install --prefer-dist --no-scripts --no-progress
 
-# Копируем файл настроек .env
-RUN cp .env.example .env
-
 # Генерируем ключ приложения
 RUN php artisan key:generate
 
