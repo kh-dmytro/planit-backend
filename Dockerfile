@@ -37,5 +37,6 @@ RUN php artisan key:generate
 
 # Настраиваем доступ к директории storage и bootstrap/cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-# Команда для запуска Laravel через встроенный сервер PHP с использованием переменной PORT от Render
+
+# Команда для запуска Laravel и выполнения миграций
 CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT}
