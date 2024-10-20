@@ -7,10 +7,20 @@ services:
             dockerfile: Dockerfile
         volumes:
             - .:/var/www
-        ports:
-            - "8000:80" # Пробрасываем порт 80 контейнера на порт 8000 хоста
         depends_on:
             - db
+        expose:
+            - 9000
+
+    nginx:
+        image: nginx:latest
+        volumes:
+            - .:/var/www
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf
+        ports:
+            - "8000:80"
+        depends_on:
+            - app
 
     db:
         image: postgres:latest
