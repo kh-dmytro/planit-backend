@@ -40,6 +40,11 @@
                                         "type": "string",
                                         "format": "password",
                                         "example": "secret"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secret"
                                     }
                                 },
                                 "type": "object"
