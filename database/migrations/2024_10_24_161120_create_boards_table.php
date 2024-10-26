@@ -10,8 +10,8 @@ class CreateBoardsTable extends Migration
     {
         Schema::create('boards', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('name');
+            $table->unsignedBigInteger('user_id')->constrained()->onDelete('cascade');
+            $table->string('title');
             $table->text('description')->nullable();
             $table->timestamps();
 

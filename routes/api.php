@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BoardController;
+use App\Http\Controllers\CardController;
+use App\Http\Controllers\ChecklistController;
+use App\Http\Controllers\TaskController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -24,4 +28,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [UserController::class, 'show']);
     Route::put('user', [UserController::class, 'update']);
     Route::delete('user', [UserController::class, 'destroy']);
+
+    Route::get('boards', [BoardController::class, 'index']); // Получить все доски пользователя
+    Route::post('boards', [BoardController::class, 'store']); // Создать новую доску
+    Route::get('boards/{id}', [BoardController::class, 'show']); // Получить конкретную доску
+    Route::put('boards/{id}', [BoardController::class, 'update']); // Обновить доску
+    Route::delete('boards/{id}', [BoardController::class, 'destroy']); // Удалить доску
+    
+    Route::get('boards/{boardId}/cards', [CardController::class, 'index']);
+    Route::post('boards/{boardId}/cards', [CardController::class, 'store']);
+    Route::get('boards/{boardId}/cards/{cardId}', [CardController::class, 'show']);
+    Route::put('boards/{boardId}/cards/{cardId}', [CardController::class, 'update']);
+    Route::delete('boards/{boardId}/cards/{cardId}', [CardController::class, 'destroy']);
 });
+
