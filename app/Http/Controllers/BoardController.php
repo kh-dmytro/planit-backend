@@ -14,7 +14,8 @@ class BoardController extends Controller
         // Получаем доски, принадлежащие текущему пользователю
         $boards = Auth::user()->boards;
 
-        return response()->json($boards);
+        //return response()->json($boards);
+        return response()->json(['boards' => $boards], 200);
     }
 
     // Создание новой доски
