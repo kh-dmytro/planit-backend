@@ -14,7 +14,8 @@ class CardController extends Controller
         $board = Auth::user()->boards()->findOrFail($boardId); // Находим доску по ID
         $cards = $board->cards; // Получаем карточки этой доски
  
-        return response()->json($cards);
+        //return response()->json($cards);
+        return response()->json(['cards' => $cards], 200);
     }
 
     public function store(Request $request, $boardId)

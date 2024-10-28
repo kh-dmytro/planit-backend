@@ -40,5 +40,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('boards/{boardId}/cards/{cardId}', [CardController::class, 'show']);
     Route::put('boards/{boardId}/cards/{cardId}', [CardController::class, 'update']);
     Route::delete('boards/{boardId}/cards/{cardId}', [CardController::class, 'destroy']);
+
+    Route::get('boards/{boardId}/cards/{cardId}/checklists', [ChecklistController::class, 'index']);
+    Route::post('boards/{boardId}/cards/{cardId}/checklists', [ChecklistController::class, 'store']);
+    Route::get('boards/{boardId}/cards/{cardId}/checklists/{checklistId}', [ChecklistController::class, 'show']);
+    Route::put('boards/{boardId}/cards/{cardId}/checklists/{checklistId}', [ChecklistController::class, 'update']);
+    Route::delete('boards/{boardId}/cards/{cardId}/checklists/{checklistId}', [ChecklistController::class, 'destroy']);
+
+    Route::get('boards/{boardId}/cards/{cardId}/checklists/{checklistId}/tasks', [TaskController::class, 'index']);
+    Route::post('boards/{boardId}/cards/{cardId}/checklists/{checklistId}/tasks', [TaskController::class, 'store']);
+    Route::get('boards/{boardId}/cards/{cardId}/checklists/{checklistId}/tasks/{taskId}', [TaskController::class, 'show']);
+    Route::put('boards/{boardId}/cards/{cardId}/checklists/{checklistId}/tasks/{taskId}', [TaskController::class, 'update']);
+    Route::delete('boards/{boardId}/cards/{cardId}/checklists/{checklistId}/tasks/{taskId}', [TaskController::class, 'destroy']);
+    Route::put('boards/{boardId}/cards/{cardId}/checklists/{checklistId}/tasks/{taskId}/status', [TaskController::class, 'updateStatus']);
+
 });
 
