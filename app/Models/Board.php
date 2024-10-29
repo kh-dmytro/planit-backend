@@ -10,12 +10,15 @@ class Board extends Model
     use HasFactory;
     protected $fillable = ['title', 'description', 'user_id'];
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'board_user')->withPivot('role')->withTimestamps();
+    }
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-
-    public function cards()
+    public function cards() 
     {
         return $this->hasMany(Card::class);
     }

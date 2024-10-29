@@ -44,8 +44,13 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function boards(): HasMany
+  
+    public function boards()
     {
-        return $this->hasMany(Board::class);
+        return $this->belongsToMany(Board::class, 'board_user')->withPivot('role')->withTimestamps();
+    }
+    public function cards()
+    {
+        return $this->belongsToMany(Card::class, 'card_user')->withPivot('role')->withTimestamps();
     }
 }
