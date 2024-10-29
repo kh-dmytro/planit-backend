@@ -14,6 +14,13 @@ class Card extends Model
     {
         return $this->belongsTo(Board::class);
     }
+    // App\Models\Card.php
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'card_user')->withPivot('role')->withTimestamps();
+    }
+
 
     public function checklists()
     {
