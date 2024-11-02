@@ -19,6 +19,8 @@ class CheckCardAccess
      */
     public function handle($request, Closure $next)
     {
+
+        /*
         $cardId = $request->route('cardId');
         $boarId = $request->route('boardId');
         $user = Auth::user();
@@ -51,59 +53,45 @@ class CheckCardAccess
         $request->merge(['user_role' => $cardAccess->pivot->role]);
         Log::info('user_role: ' . $user->id . ' on card: ' . $cardAccess->pivot->role);
         return $next($request);
-        /*
+
+        */
+
+        $cardId = $request->route('cardId');
         $boardId = $request->route('boardId');
         $user = Auth::user();
-        Log::info('Checking board access for user: ' . $user->id . ' on board: ' . $boardId);
+        
+        $card = Card::find($cardId);
+        if (!$card) {
+            return response()->json(['error' => 'Card not found'], 404);
+        }
+        
         $board = Board::find($boardId);
         if (!$board) {
             return response()->json(['error' => 'Board not found'], 404);
         }
-
-        // Проверяем, имеет ли пользователь доступ к доске
-        $access = $board->users()->where('user_id', $user->id)->first();
-        Log::info('Checking access for user: ' . $user->id . ' on board: ' . $access);
-        if (!$access) {
-            return response()->json(['error' => 'Access denied'], 403);
-        }
-      
-        // Передаем роль пользователя в запрос для использования в контроллере
-        $request->merge(['user_role' => $access->pivot->role]);
-        Log::info('user_role: ' . $user->id . ' on board: ' . $access->pivot->role);
-        return $next($request);
-
-
-        /*$user = Auth::user();
-        $cardId = $request->route('cardId');
-        Log::info('Checking card access for user: ' . $user->id . ' on card: ' . $cardId);
-        // Сначала проверяем доступ на уровне карточки
-        $card = Card::findOrFail($cardId);
-        if (!$card) {
-            return response()->json(['error' => 'card not found'], 404);
-        }
-
+    
+        // Проверяем, имеет ли пользователь доступ к карточке
         $cardAccess = $card->users()->where('user_id', $user->id)->first();
-
-        if ($cardAccess) {
-            $request->merge(['user_role' => $cardAccess->pivot->role]);
-            return $next($request);
-        }
-        Log::info('Checking access for user: ' . $user->id . ' on card: ' . $cardAccess);
         if (!$cardAccess) {
-            return response()->json(['error' => 'Access denied'], 403);
+            $boardAccess = $board->users()->where('user_id', $user->id)->first();
+            if (!$boardAccess) {
+                return response()->json(['error' => 'Access denied'], 403);
+            }
+            $userRole = $boardAccess->pivot->role;
+        } else {
+            $userRole = $cardAccess->pivot->role;
         }
-        $boardId = $request->route('boardId');
-        // Если доступ к карточке не найден, проверяем доступ к доске
-        $boardAccess = $card->board->users()->where('user_id', $user->id)->first();
-
-        if ($boardAccess) {
-            $request->merge(['user_role' => $boardAccess->pivot->role]);
-            return $next($request);
+    
+        // Блокируем доступ для роли 'viewer' к маршрутам с методами PUT, PATCH, DELETE
+        if ($userRole === 'viewer' && in_array($request->method(), ['POST','PUT', 'PATCH', 'DELETE'])) {
+            return response()->json(['error' => 'Insufficient permissions to modify or delete'], 403);
         }
-
-         Log::info('user_role: ' . $user->id . ' on board: ' . $boardAccess->pivot->role);
-        // Если нет доступа ни к карточке, ни к доске, возвращаем ошибку
-        return response()->json(['error' => 'Access denied'], 403);
-        */
+        if ($userRole === 'editor' && in_array($request->method(), ['DELETE'])) {
+            return response()->json(['error' => 'Insufficient permissions to delete'], 403);
+        }
+    
+        $request->merge(['user_role' => $userRole]);
+        return $next($request);
+      
     }
 }

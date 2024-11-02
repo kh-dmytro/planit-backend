@@ -121,5 +121,17 @@ class CardController extends Controller
 
         return response()->json(['message' => 'User added to card successfully']);
     }
+    // Метод для получения карточек пользователя, к которым он имеет доступ, исключая свои
+    public function getUserCards(Request $request)
+    {
+        $user = Auth::user();
+
+        // Получаем карточки, к которым у пользователя есть доступ, исключая свои
+        $cards = $user->cards()
+            ->where('cards.user_id', '!=', $user->id) // Предполагается, что в карточке есть поле user_id
+            ->get(['cards.id', 'cards.title', 'cards.board_id']); 
+
+        return response()->json($cards);
+    }
    
 }

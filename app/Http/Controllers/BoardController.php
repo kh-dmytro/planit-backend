@@ -34,7 +34,7 @@ class BoardController extends Controller
         // Убедитесь, что текущий пользователь авторизован
         $user = Auth::user();
         if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Unauthorized (board)'], 401);
         }
     
         // Создаем доску для текущего пользователя
@@ -85,7 +85,7 @@ class BoardController extends Controller
         }
         $board = Auth::user()->boards()->findOrFail($id);
 
-        return response()->json($board);
+        return response()->json($board, 200);
     }
 
     // Обновление информации о доске
@@ -112,7 +112,7 @@ class BoardController extends Controller
     {
         $userRole = request('user_role');
 
-        if ($userRole !== 'editor' && $userRole !== 'owner') {
+        if (/*$userRole !== 'editor' &&*/ $userRole !== 'owner') {
             return response()->json(['error' => 'Access denied'], 403);
         }
         $board = Auth::user()->boards()->findOrFail($id);
@@ -120,7 +120,7 @@ class BoardController extends Controller
 
         return response()->json(['message' => 'Board deleted successfully']);
     }
-    public function addUserToBoard(Request $request, $boardId)
+   /* public function addUserToBoard(Request $request, $boardId)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -137,6 +137,17 @@ class BoardController extends Controller
         $board->users()->attach($request->user_id, ['role' => $request->role]);
 
         return response()->json(['message' => 'User added to board successfully'], 200);
+    }*/
+    public function getUserBoards(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Получаем доски, к которым у пользователя есть доступ, исключая свои
+        $boards = $user->boards()
+            ->where('board_user.role', '!=', 'owner')
+            ->get(['boards.id', 'boards.title', 'boards.description']);
+          
+        return response()->json($boards);
     }
     
 }
