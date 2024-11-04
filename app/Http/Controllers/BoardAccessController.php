@@ -12,10 +12,16 @@ class BoardAccessController extends Controller
     // Назначение доступа к доске
     public function assignUser(Request $request, $boardId)
     {
+        $userRole = $request->input('user_role');
+        // Проверяем, имеет ли пользователь доступ к операции
+        if ($userRole !== 'owner') {
+            return response()->json(['error' => 'Access denied'], 403);
+        }
         $request->validate([
             'email' => 'required|email',
             'role' => 'nullable|in:owner,editor,viewer', // Допустимые роли
         ]);
+        
     
         $user = User::where('email' , $request->email)->first();
     

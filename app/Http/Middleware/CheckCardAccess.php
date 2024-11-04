@@ -56,6 +56,7 @@ class CheckCardAccess
 
         */
 
+        /*
         $cardId = $request->route('cardId');
         $boardId = $request->route('boardId');
         $user = Auth::user();
@@ -84,7 +85,7 @@ class CheckCardAccess
     
         // Блокируем доступ для роли 'viewer' к маршрутам с методами PUT, PATCH, DELETE
         if ($userRole === 'viewer' && in_array($request->method(), ['POST','PUT', 'PATCH', 'DELETE'])) {
-            return response()->json(['error' => 'Insufficient permissions to modify or delete'], 403);
+            return response()->json(['error' => 'Insufficient permissions to create, modify or delete'], 403);
         }
         if ($userRole === 'editor' && in_array($request->method(), ['DELETE'])) {
             return response()->json(['error' => 'Insufficient permissions to delete'], 403);
@@ -92,6 +93,6 @@ class CheckCardAccess
     
         $request->merge(['user_role' => $userRole]);
         return $next($request);
-      
+      */
     }
 }

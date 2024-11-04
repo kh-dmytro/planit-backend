@@ -34,7 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('user', [UserController::class, 'destroy']);
     Route::post('logout', [AuthController::class, 'logout']);
 
-    // Эти маршруты не требуют проверки доступа к доске
+    // Эти маршруты не требуют проверки доступа к доске 
     Route::get('boards', [BoardController::class, 'index']); // Получить все доски пользователя
     Route::post('boards', [BoardController::class, 'store']); // Создать новую доску
     Route::get('boards/accessible', [BoardController::class, 'getUserBoards']);
@@ -56,7 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('cards', [CardController::class, 'index']); // Получить все карточки на доске
             Route::post('cards', [CardController::class, 'store']); // Создать новую карточку
             // Здесь мы добавляем маршруты карточек, которые требуют проверки доступа к доске
-            Route::middleware(['check.card.access'])->group(function () {
+           // Route::middleware(['check.card.access'])->group(function () {
             
                 Route::get('cards/{cardId}', [CardController::class, 'show']); // Получить конкретную карточку
                 Route::put('cards/{cardId}', [CardController::class, 'update']); // Обновить карточку
@@ -84,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function () {
                     Route::delete('{taskId}', [TaskController::class, 'destroy']); // Удалить задачу
                     Route::put('{taskId}/status', [TaskController::class, 'updateStatus']); // Обновить статус задачи
                 });
-            });
+           // });
         });
     });
 });
