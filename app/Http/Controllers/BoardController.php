@@ -78,11 +78,13 @@ class BoardController extends Controller
     // Получение конкретной доски
     public function show($id)
     {
+        /*
         $userRole = request('user_role'); // Роль пользователя, переданная middleware
 
         if ($userRole !== 'viewer' && $userRole !== 'editor' && $userRole !== 'owner') {
             return response()->json(['error' => 'Access denied'], 403);
         }
+            */
         $board = Auth::user()->boards()->findOrFail($id);
 
         return response()->json($board, 200);
@@ -91,11 +93,13 @@ class BoardController extends Controller
     // Обновление информации о доске
     public function update(Request $request, $id)
     {
+        /*
         $userRole = request('user_role');
 
         if ($userRole !== 'editor' && $userRole !== 'owner') {
             return response()->json(['error' => 'Access denied'], 403);
         }
+            */
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -110,11 +114,14 @@ class BoardController extends Controller
     // Удаление доски
     public function destroy($id)
     {
+        /*
         $userRole = request('user_role');
 
-        if (/*$userRole !== 'editor' &&*/ $userRole !== 'owner') {
+        if ($userRole !== 'editor' && $userRole !== 'owner') {
             return response()->json(['error' => 'Access denied'], 403);
         }
+
+        */
         $board = Auth::user()->boards()->findOrFail($id);
         $board->delete();
 

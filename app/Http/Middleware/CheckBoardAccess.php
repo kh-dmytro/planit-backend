@@ -97,6 +97,6 @@ class CheckBoardAccess
     // Передаем роль пользователя для использования в контроллере
     $request->merge(['user_role' => $userRole]);
 
-    return $next($request);
+    return $next($request); 
     }
 }
