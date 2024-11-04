@@ -1,118 +1,168 @@
 <?php
 
 namespace Tests\Feature;
-
+use Tests\TestCase;
 use App\Models\User;
 use App\Models\Board;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Illuminate\Support\Facades\Auth;
 
 class BoardControllerFunctionalTest extends TestCase
 {
-    /*
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
-        // Создаем пользователя и авторизуем его
-        $this->user = User::factory()->create();
-        $this->actingAs($this->user);
+        $this->ownerUser = User::factory()->create();
+        $this->editorUser = User::factory()->create();
+        $this->viewerUser = User::factory()->create();
     }
 
-    public function test_can_get_all_boards()
+    /** @test */
+    public function test_owner_can_create_board()
     {
-        $boards = Board::factory()->count(3)->create(['user_id' => $this->user->id]);
-
-        $response = $this->getJson(route('boards.index'));
-
-        $response->assertStatus(200)
-                 ->assertJsonCount(3);
-    }
-
-    public function test_can_create_board()
-    {
-        $data = [
-            'title' => 'New Board',
-            'description' => 'A description for the board',
-        ];
-
-        $response = $this->postJson(route('boards.store'), $data);
+        $response = $this->actingAs($this->ownerUser)->postJson('/api/boards', [
+            'title' => 'Test Board',
+            'description' => 'Board description'
+        ]);
 
         $response->assertStatus(201)
-                 ->assertJsonFragment(['title' => 'New Board']);
-        
-        $this->assertDatabaseHas('boards', ['title' => 'New Board']);
+                 ->assertJson([
+                     'message' => 'Board created successfully',
+                     'board' => [
+                         'title' => 'Test Board',
+                         'description' => 'Board description'
+                     ]
+                 ]);
+        $this->assertDatabaseHas('boards', ['title' => 'Test Board']);
     }
 
-    public function test_create_board_validation_error()
+    /** @test */
+    /*public function test_non_owner_cannot_create_board()
     {
-        $data = [
-            'title' => '',
-        ];
+        $response = $this->actingAs($this->viewerUser)->postJson('/api/boards', [
+            'title' => 'Unauthorized Board',
+            'description' => 'This should fail'
+        ]);
 
-        $response = $this->postJson(route('boards.store'), $data);
-
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['title']);
+        $response->assertStatus(403)
+                 ->assertJson(['error' => 'Access denied']);
     }
-
-    public function test_can_get_specific_board()
+*/
+    /** @test */
+    public function test_owner_can_view_own_board()
     {
-        $board = Board::factory()->create(['user_id' => $this->user->id]);
-
-        $response = $this->getJson(route('boards.show', $board->id));
+        $board = Board::factory()->create(['user_id' => $this->ownerUser->id]);
+        $board->users()->attach($this->ownerUser->id, ['role' => 'owner']);
+        $response = $this->actingAs($this->ownerUser)->getJson("/api/boards/{$board->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['id' => $board->id, 'title' => $board->title]);
+                 ->assertJson([
+                     'id' => $board->id,
+                     'title' => $board->title,
+                     'description' => $board->description,
+                 ]);
     }
 
-    public function test_can_update_board()
+    /** @test */
+    /*
+    public function test_editor_can_view_board()
     {
-        $board = Board::factory()->create(['user_id' => $this->user->id]);
-        $data = [
-            'title' => 'Updated Board Title',
-            'description' => 'Updated description',
-        ];
+        $board = Board::factory()->create(['user_id' => $this->ownerUser->id]);
+        $board->users()->attach($this->editorUser->id, ['role' => 'editor']);
 
-        $response = $this->putJson(route('boards.update', $board->id), $data);
+        $response = $this->actingAs($this->editorUser)->getJson("/api/boards/{$board->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['title' => 'Updated Board Title']);
-
-        $this->assertDatabaseHas('boards', ['id' => $board->id, 'title' => 'Updated Board Title']);
+                 ->assertJson([
+                     'id' => $board->id,
+                     'title' => $board->title,
+                     'description' => $board->description,
+                 ]);
     }
 
-    public function test_update_board_validation_error()
+    /** @test */
+    /*
+    public function test_viewer_can_only_view_board_and_not_update()
     {
-        $board = Board::factory()->create(['user_id' => $this->user->id]);
+        $board = Board::factory()->create(['user_id' => $this->ownerUser->id]);
+        $board->users()->attach($this->viewerUser->id, ['role' => 'viewer']);
 
-        $response = $this->putJson(route('boards.update', $board->id), ['title' => '']);
+        $response = $this->actingAs($this->viewerUser)->getJson("/api/boards/{$board->id}");
+        $response->assertStatus(200);
 
-        $response->assertStatus(422)
-                 ->assertJsonValidationErrors(['title']);
+        $updateResponse = $this->actingAs($this->viewerUser)->putJson("/api/boards/{$board->id}", [
+            'title' => 'Updated Title',
+        ]);
+
+        $updateResponse->assertStatus(403)
+                       ->assertJson(['error' => 'Access denied']);
     }
 
-    public function test_can_delete_board()
+    /** @test */
+    /*
+    public function test_editor_can_update_board()
     {
-        $board = Board::factory()->create(['user_id' => $this->user->id]);
+        $board = Board::factory()->create(['user_id' => $this->ownerUser->id]);
+        $board->users()->attach($this->editorUser->id, ['role' => 'editor']);
 
-        $response = $this->deleteJson(route('boards.destroy', $board->id));
+        $response = $this->actingAs($this->editorUser)->putJson("/api/boards/{$board->id}", [
+            'title' => 'Editor Updated Title',
+            'description' => 'Updated description by editor'
+        ]);
 
         $response->assertStatus(200)
-                 ->assertJsonFragment(['message' => 'Board deleted successfully']);
+                 ->assertJson([
+                     'message' => 'Board updated successfully',
+                     'board' => [
+                         'title' => 'Editor Updated Title',
+                         'description' => 'Updated description by editor'
+                     ]
+                 ]);
+    }
 
+    /** @test */
+    /*public function test_viewer_cannot_add_user_to_board()
+    {
+        $board = Board::factory()->create(['user_id' => $this->ownerUser->id]);
+        $board->users()->attach($this->viewerUser->id, ['role' => 'viewer']);
+
+        $response = $this->actingAs($this->viewerUser)->postJson("/api/boards/{$board->id}/assign", [
+            'user_id' => $this->editorUser->id,
+            'role' => 'editor'
+        ]);
+
+        $response->assertStatus(403)
+                 ->assertJson(['error' => 'Access denied']);
+    }
+*/
+    /** @test */
+    public function test_owner_can_delete_board()
+    {
+        $board = Board::factory()->create(['user_id' => $this->ownerUser->id]);
+        $board->users()->attach($this->ownerUser->id, ['role' => 'owner']);
+
+       /* $board = Board::factory()->create(['user_id' => $this->ownerUser->id]);
+        $board->users()->attach($this->ownerUser->id, ['role' => 'owner']);*/
+        $response = $this->actingAs($this->ownerUser)->deleteJson("/api/boards/{$board->id}");
+
+        $response->assertStatus(200)
+                 ->assertJson(['message' => 'Board deleted successfully']);
         $this->assertDatabaseMissing('boards', ['id' => $board->id]);
     }
 
-    public function test_cannot_access_board_of_another_user()
+    /** @test */
+    /*
+    public function test_editor_cannot_delete_board()
     {
-        $otherUser = User::factory()->create();
-        $board = Board::factory()->create(['user_id' => $otherUser->id]);
+        $board = Board::factory()->create(['user_id' => $this->ownerUser->id]);
+        $board->users()->attach($this->editorUser->id, ['role' => 'editor']);
 
-        $this->getJson(route('boards.show', $board->id))->assertStatus(404);
-        $this->putJson(route('boards.update', $board->id), ['title' => 'New Title'])->assertStatus(404);
-        $this->deleteJson(route('boards.destroy', $board->id))->assertStatus(404);
+        $response = $this->actingAs($this->editorUser)->deleteJson("/api/boards/{$board->id}");
+
+        $response->assertStatus(403)
+                 ->assertJson(['error' => 'Access denied']);
     }
-        */
+                 **/
 }
