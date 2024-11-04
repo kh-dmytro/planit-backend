@@ -20,3 +20,4 @@ yarn-error.log
 .Dockerfile
 Dockerfile
 nginx.conf
+.env.example
