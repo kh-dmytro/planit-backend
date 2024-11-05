@@ -39,7 +39,7 @@ class ChecklistControllerFunctionalTest extends TestCase
 
         // Создаем карточку
         $this->card = Card::factory()->create(['board_id' => $this->board->id]);
-        
+
         // Добавление пользователей к карточке, заменяем attach на save
         $this->card->users()->save($this->ownerUser, ['role' => 'owner']);
         $this->card->users()->save($this->editorUser, ['role' => 'editor']);
@@ -103,10 +103,10 @@ class ChecklistControllerFunctionalTest extends TestCase
             'title' => 'New Checklist',
             'description' => 'This is a checklist'
         ]);
-        
+
         $response->assertStatus(201)
-                 ->assertJson(['message' => 'Checklist created successfully']);
-        
+            ->assertJson(['message' => 'Checklist created successfully']);
+
         $this->assertDatabaseHas('checklists', ['title' => 'New Checklist']);
     }
 
@@ -145,9 +145,9 @@ class ChecklistControllerFunctionalTest extends TestCase
     {
         // Владелец может просмотреть чеклист
         $response = $this->actingAs($this->ownerUser)->getJson("/api/boards/{$this->board->id}/cards/{$this->card->id}/checklists/{$this->checklist->id}");
-        
+
         $response->assertStatus(200)
-                 ->assertJson($this->checklist->toArray());
+            ->assertJson($this->checklist->toArray());
     }
 
     /** @test */
@@ -182,8 +182,8 @@ class ChecklistControllerFunctionalTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJson(['message' => 'Checklist updated successfully']);
-        
+            ->assertJson(['message' => 'Checklist updated successfully']);
+
         $this->assertDatabaseHas('checklists', ['title' => 'Updated Checklist']);
     }
 
@@ -224,12 +224,54 @@ class ChecklistControllerFunctionalTest extends TestCase
         $response = $this->actingAs($this->ownerUser)->deleteJson("/api/boards/{$this->board->id}/cards/{$this->card->id}/checklists/{$this->checklist->id}");
 
         $response->assertStatus(200)
-                 ->assertJson(['message' => 'Checklist deleted successfully']);
-        
+            ->assertJson(['message' => 'Checklist deleted successfully']);
+
         $this->assertDatabaseMissing('checklists', ['id' => $this->checklist->id]);
     }
 
+
+
     /** @test */
+    public function test_checklist_status_updates_based_on_tasks()
+    {
+        $card = Card::factory()->create();
+        $checklist = $card->checklists()->create(['title' => 'Checklist 1']);
+        $task1 = $checklist->tasks()->create(['title' => 'Task 1', 'is_completed' => 'true']);
+        $task2 = $checklist->tasks()->create(['title' => 'Task 2', 'is_completed' => 'true']);
+
+
+        //$checklist->updateStatusBasedOnTasks();
+
+        $this->assertEquals('completed', $checklist->status);
+
+        $task3 = $checklist->tasks()->create(['title' => 'Task 3', 'is_completed' => 'false']);
+        //$checklist->updateStatusBasedOnTasks();
+
+        $this->assertEquals('active', $checklist->status);
+    }
+    /** @test */
+    public function test_card_status_updates_based_on_checklists()
+    {
+        $card = Card::factory()->create();
+        $checklist1 = $card->checklists()->create(['title' => 'Checklist 1']);
+        $checklist2 = $card->checklists()->create(['title' => 'Checklist 2']);
+
+        $checklist1->tasks()->create(['title' => 'Task 1', 'is_completed' => 'true']);
+        $checklist1->tasks()->create(['title' => 'Task 2', 'is_completed' => 'true']);
+        $checklist2->tasks()->create(['title' => 'Task 3', 'is_completed' => 'false']);
+
+        $card->updateStatusBasedOnChecklists();
+
+        $this->assertEquals('active', $card->status);
+
+        $checklist2->tasks()->create(['title' => 'Task 4', 'is_completed' => 'true']);
+        // $checklist2->updateStatusBasedOnTasks(); // Обновление статуса чеклиста
+
+        // $card->updateStatusBasedOnChecklists();
+
+        $this->assertEquals('active', $card->status); // Все чеклисты не завершены
+    }
+
     /*
     public function editor_cannot_delete_checklist()
     {
