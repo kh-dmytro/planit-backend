@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Card extends Model
 {
     use HasFactory;
-    protected $fillable = ['title', 'description', 'board_id'];
+    protected $fillable = ['title', 'description', 'status', 'priority', 'board_id'];
 
     public function board()
     {
@@ -25,5 +25,25 @@ class Card extends Model
     public function checklists()
     {
         return $this->hasMany(Checklist::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+    public function attachments()
+    {
+        return $this->hasMany(Attachment::class);
+    }
+
+    // Метод для обновления статуса карты на основе чеклистов
+    public function updateStatusBasedOnChecklists()
+    {
+        $allChecklistsCompleted = $this->checklists->every(function ($checklist) {
+            return $checklist->status === 'completed';
+        });
+
+        $this->status = $allChecklistsCompleted ? 'completed' : 'active';
+        $this->save();
     }
 }

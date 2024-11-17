@@ -41,7 +41,7 @@ class BoardAccessController extends Controller
         // Назначаем доступ
         $board->users()->attach($user->id, ['role' => $role]);
     
-        return response()->json(['message' => 'Access granted'], 200);
+        return response()->json(['message' => 'Access granted'], 201);
     }
 
     // Удаление доступа к доске

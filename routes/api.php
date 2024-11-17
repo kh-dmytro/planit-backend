@@ -11,6 +11,7 @@ use App\Http\Controllers\ChecklistController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\BoardAccessController;
 use App\Http\Controllers\CardAccessController;
+use App\Http\Controllers\CommentController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -39,52 +40,60 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('boards', [BoardController::class, 'store']); // Создать новую доску
     Route::get('boards/accessible', [BoardController::class, 'getUserBoards']);
 
+
+
     // Группируем маршруты, требующие проверки доступа к доске
-    Route::middleware(['check.board.access'])->group(function ()
-    {
-        
+    Route::middleware(['check.board.access'])->group(function () {
+
         Route::get('boards/{boardId}', [BoardController::class, 'show']); // Получить конкретную доску
         Route::put('boards/{boardId}', [BoardController::class, 'update']); // Обновить доску
         Route::delete('boards/{boardId}', [BoardController::class, 'destroy']); // Удалить доску
         Route::post('boards/{boardId}/assign', [BoardAccessController::class, 'assignUser']); // Назначить пользователя
         Route::delete('boards/{boardId}/unassign', [BoardAccessController::class, 'unassignUser']); // Удалить доступ у пользователя
-        
+
         Route::get('cards/allowed', [CardController::class, 'getUserCards']);
         // Группа маршрутов для карточек и вложенных ресурсов
-        Route::prefix('boards/{boardId}')->group(function () 
-        {
+        Route::prefix('boards/{boardId}')->group(function () {
             Route::get('cards', [CardController::class, 'index']); // Получить все карточки на доске
             Route::post('cards', [CardController::class, 'store']); // Создать новую карточку
             // Здесь мы добавляем маршруты карточек, которые требуют проверки доступа к доске
-           // Route::middleware(['check.card.access'])->group(function () {
-            
-                Route::get('cards/{cardId}', [CardController::class, 'show']); // Получить конкретную карточку
-                Route::put('cards/{cardId}', [CardController::class, 'update']); // Обновить карточку
-                Route::delete('cards/{cardId}', [CardController::class, 'destroy']); // Удалить карточку
+            // Route::middleware(['check.card.access'])->group(function () {
 
-                // Маршруты для назначения доступа к карточке
-                Route::post('cards/{cardId}/assign', [CardAccessController::class, 'assignUser']); // Назначить пользователя
-                Route::delete('cards/{cardId}/unassign', [CardAccessController::class, 'unassignUser']); // Удалить доступ у пользователя
+            Route::get('cards/{cardId}', [CardController::class, 'show']); // Получить конкретную карточку
+            Route::put('cards/{cardId}', [CardController::class, 'update']); // Обновить карточку
+            Route::delete('cards/{cardId}', [CardController::class, 'destroy']); // Удалить карточку
 
-                // Маршруты для чеклистов
-                Route::prefix('cards/{cardId}/checklists')->group(function () {
-                    Route::get('/', [ChecklistController::class, 'index']); // Получить все чеклисты карточки
-                    Route::post('/', [ChecklistController::class, 'store']); // Создать новый чеклист
-                    Route::get('{checklistId}', [ChecklistController::class, 'show']); // Получить конкретный чеклист
-                    Route::put('{checklistId}', [ChecklistController::class, 'update']); // Обновить чеклист
-                    Route::delete('{checklistId}', [ChecklistController::class, 'destroy']); // Удалить чеклист
-                });
+            // Маршруты для назначения доступа к карточке
+            Route::post('cards/{cardId}/assign', [CardAccessController::class, 'assignUser']); // Назначить пользователя
+            Route::delete('cards/{cardId}/unassign', [CardAccessController::class, 'unassignUser']); // Удалить доступ у пользователя
 
-                // Маршруты для задач
-                Route::prefix('cards/{cardId}/checklists/{checklistId}/tasks')->group(function () {
-                    Route::get('/', [TaskController::class, 'index']); // Получить все задачи чеклиста
-                    Route::post('/', [TaskController::class, 'store']); // Создать новую задачу
-                    Route::get('{taskId}', [TaskController::class, 'show']); // Получить конкретную задачу
-                    Route::put('{taskId}', [TaskController::class, 'update']); // Обновить задачу
-                    Route::delete('{taskId}', [TaskController::class, 'destroy']); // Удалить задачу
-                    Route::put('{taskId}/status', [TaskController::class, 'updateStatus']); // Обновить статус задачи
-                });
-           // });
+            Route::get('cards/{cardId}/comments', [CommentController::class, 'index']); // Получить комментарии
+            Route::post('cards/{cardId}/comments', [CommentController::class, 'store']); // Добавить комментарий или ответ
+            Route::delete('cards/{cardId}/comments/{commentID}', [CommentController::class, 'destroy']); // Удалить комментарий
+
+            Route::post('cards/{cardId}/attachments', [CardController::class, 'uploadAttachment']);
+            Route::delete('cards/{cardId}/attachments/{attachmentId}', [CardController::class, 'deleteAttachment']);
+
+
+            // Маршруты для чеклистов
+            Route::prefix('cards/{cardId}/checklists')->group(function () {
+                Route::get('/', [ChecklistController::class, 'index']); // Получить все чеклисты карточки
+                Route::post('/', [ChecklistController::class, 'store']); // Создать новый чеклист
+                Route::get('{checklistId}', [ChecklistController::class, 'show']); // Получить конкретный чеклист
+                Route::put('{checklistId}', [ChecklistController::class, 'update']); // Обновить чеклист
+                Route::delete('{checklistId}', [ChecklistController::class, 'destroy']); // Удалить чеклист
+            });
+
+            // Маршруты для задач
+            Route::prefix('cards/{cardId}/checklists/{checklistId}/tasks')->group(function () {
+                Route::get('/', [TaskController::class, 'index']); // Получить все задачи чеклиста
+                Route::post('/', [TaskController::class, 'store']); // Создать новую задачу
+                Route::get('{taskId}', [TaskController::class, 'show']); // Получить конкретную задачу
+                Route::put('{taskId}', [TaskController::class, 'update']); // Обновить задачу
+                Route::delete('{taskId}', [TaskController::class, 'destroy']); // Удалить задачу
+                Route::put('{taskId}/status', [TaskController::class, 'updateStatus']); // Обновить статус задачи
+            });
+            // });
         });
     });
 });

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class Authenticate extends Middleware
 {
-     /**
+    /**
      * Get the path the user should be redirected to when they are not authenticated.
      */
     /*
@@ -20,7 +20,7 @@ class Authenticate extends Middleware
     }
         */
 
-        /*
+    /*
         protected function unauthenticated($request, array $guards)
         {
             return response()->json(['error' => 'Unauthenticated.'], 401);
@@ -29,11 +29,11 @@ class Authenticate extends Middleware
 
     public function handle($request, Closure $next, ...$guards)
     {
-        \Log::info('Sanctum Middleware: Checking user auth');
+        Log::info('Sanctum Middleware: Checking user auth');
         try {
             $this->authenticate($request, $guards);
         } catch (\Illuminate\Auth\AuthenticationException $e) {
-            \Log::info('Sanctum Middleware: Unauthorized access');
+            Log::info('Sanctum Middleware: Unauthorized access');
             return new JsonResponse([
                 'error' => 'Unauthorized',
                 'message' => 'Invalid or missing token'

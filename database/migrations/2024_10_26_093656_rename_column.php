@@ -9,6 +9,7 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    /*
     public function up(): void
     {
         if (Schema::hasColumn('boards', 'name')) {
@@ -39,6 +40,7 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
+    /*
     public function down(): void
     {
         if (Schema::hasColumn('boards', 'title')) {
@@ -66,4 +68,5 @@ return new class extends Migration
         }
     
     }
+        */
 };

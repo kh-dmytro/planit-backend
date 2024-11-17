@@ -51,7 +51,7 @@ class TaskController extends Controller
             'title' => $validated['title'],
             'is_completed' => false,
         ]);
-
+        $task->checklist->updateStatusBasedOnTasks();
         return response()->json(['message' => 'Task created successfully', 'task' => $task], 201);
     }
 
@@ -121,6 +121,7 @@ class TaskController extends Controller
         // Обновление состояния задачи
         $task->is_completed = $validated['is_completed'];
         $task->save();
+        $task->checklist->updateStatusBasedOnTasks();
     
         return response()->json(['message' => 'Task status updated successfully', 'task' => $task]);
     }
@@ -144,7 +145,7 @@ class TaskController extends Controller
 
         $task = $checklist->tasks()->findOrFail($taskId);
         $task->delete();
-
+        $task->checklist->updateStatusBasedOnTasks();
         return response()->json(['message' => 'Task deleted successfully']);
     }
 
