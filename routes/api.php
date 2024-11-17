@@ -71,6 +71,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('cards/{cardId}/comments', [CommentController::class, 'store']); // Добавить комментарий или ответ
             Route::delete('cards/{cardId}/comments/{commentID}', [CommentController::class, 'destroy']); // Удалить комментарий
 
+            Route::post('cards/{cardId}/attachments', [CardController::class, 'uploadAttachment']);
+            Route::delete('cards/{cardId}/attachments/{attachmentId}', [CardController::class, 'deleteAttachment']);
+
 
             // Маршруты для чеклистов
             Route::prefix('cards/{cardId}/checklists')->group(function () {

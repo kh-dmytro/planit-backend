@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Board;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class BoardController extends Controller
 {
@@ -12,10 +13,10 @@ class BoardController extends Controller
     public function index()
     {
         // Получаем доски, принадлежащие текущему пользователю
-      
+
         $userRole = request('user_role'); // Роль пользователя, переданная middleware
 
-       
+
         $boards = Auth::user()->boards;
         //return response()->json($boards);
         return response()->json(['boards' => $boards], 200);
@@ -24,54 +25,53 @@ class BoardController extends Controller
     // Создание новой доски
     public function store(Request $request)
     {
-        \Log::info('Request data:', $request->all());
-      
+        //\Log::info('Request data:', $request->all());
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
-    
+
         // Убедитесь, что текущий пользователь авторизован
         $user = Auth::user();
         if (!$user) {
             return response()->json(['error' => 'Unauthorized (board)'], 401);
         }
-    
+
         // Создаем доску для текущего пользователя
         $board = $user->boards()->create(array_merge($validated, ['user_id' => $user->id]));
         try {
             // Логируем перед добавлением
-            \Log::info('Attempting to attach user with role owner:', [
+            Log::info('Attempting to attach user with role owner:', [
                 'board_id' => $board->id,
                 'user_id' => $user->id
             ]);
-    
+
             // Проверяем, есть ли уже связь
             $existingUser = $board->users()->where('user_id', $user->id)->first();
-            
+
             if (!$existingUser) {
                 $board->users()->attach($user->id, ['role' => 'owner']); // Назначаем роль owner
-                \Log::info('User successfully attached to board:', [
+                Log::info('User successfully attached to board:', [
                     'board_id' => $board->id,
                     'user_id' => $user->id,
                     'role' => 'owner'
                 ]);
             } else {
-                \Log::info('User already exists in board:', [
+                Log::info('User already exists in board:', [
                     'board_id' => $board->id,
                     'user_id' => $user->id,
                     'existing_role' => $existingUser->pivot->role
                 ]);
             }
-    
         } catch (\Exception $e) {
-            \Log::error('Error attaching user to board: ' . $e->getMessage());
+            Log::error('Error attaching user to board: ' . $e->getMessage());
         }
-        
+
         // Проверяем, что пользователь успешно присоединен
         $attachedUser = $board->users()->where('user_id', $user->id)->first();
-        \Log::info('Attached user data:', $attachedUser ? $attachedUser->toArray() : 'No user found');
-    
+        Log::info('Attached user data:', $attachedUser ? $attachedUser->toArray() : 'No user found');
+
         return response()->json(['message' => 'Board created successfully', 'board' => $board], 201);
     }
 
@@ -127,7 +127,7 @@ class BoardController extends Controller
 
         return response()->json(['message' => 'Board deleted successfully']);
     }
-   /* public function addUserToBoard(Request $request, $boardId)
+    /* public function addUserToBoard(Request $request, $boardId)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -148,13 +148,12 @@ class BoardController extends Controller
     public function getUserBoards(Request $request)
     {
         $user = Auth::user();
-        
+
         // Получаем доски, к которым у пользователя есть доступ, исключая свои
         $boards = $user->boards()
             ->where('board_user.role', '!=', 'owner')
             ->get(['boards.id', 'boards.title', 'boards.description']);
-          
+
         return response()->json($boards);
     }
-    
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Card extends Model
 {
     use HasFactory;
-    protected $fillable = ['title', 'description','status','priority' , 'board_id'];
+    protected $fillable = ['title', 'description', 'status', 'priority', 'board_id'];
 
     public function board()
     {
@@ -30,6 +30,10 @@ class Card extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+    public function attachments()
+    {
+        return $this->hasMany(Attachment::class);
     }
 
     // Метод для обновления статуса карты на основе чеклистов

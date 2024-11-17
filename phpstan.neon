@@ -1,0 +1,10 @@
+includes:
+    - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+    level: 5  # Уровень строгости анализа (от 0 до 8)
+    paths:
+        - app  # Путь к папке с вашим кодом (обычно app в Laravel)
+    excludePaths:
+        - storage
+        - bootstrap/cache
