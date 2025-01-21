@@ -25,9 +25,9 @@ services:
     db:
         image: postgres:latest
         environment:
-            POSTGRES_USER: root
+            POSTGRES_USER: postgres
             POSTGRES_PASSWORD: XrChmP6Q9EwRvHheHE1o2MWDPZXUhOAX
-            POSTGRES_DB: database_6diy
+            POSTGRES_DB: postgres
         volumes:
             - pgdata:/var/lib/postgresql/data
 
