@@ -35,5 +35,8 @@ RUN php artisan key:generate
 # Настраиваем доступ к директории storage и bootstrap/cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
+# очистка кеша изза неправильного env
+RUN php artisan config:clear && php artisan cache:clear && php artisan config:cache
+
 # Команда для запуска Laravel и выполнения миграций
 CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT}
