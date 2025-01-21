@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Str;
+error_log('DB_HOST from config: ' . env('DB_HOST'));
 
 return [
 
@@ -32,7 +33,7 @@ return [
     | choice installed on your machine before you begin development.
     |
     */
-
+    
     'connections' => [
 
         'sqlite' => [
@@ -62,7 +63,7 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
-
+        
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
@@ -75,7 +76,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => 'prefer',
+            'sslmode' => env('PGSSLMODE', 'prefer'),
         ],
 
         'sqlsrv' => [
