@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Str;
 error_log('DB_HOST from config: ' . env('DB_HOST'));
+error_log('Laravel environment file path: ' . base_path('.env'));
 
 return [
 
